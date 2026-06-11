@@ -74,3 +74,7 @@ uni-app 项目**没有传统的 `src/` 目录**，源码直接在项目根目录
 | `references/upload.md` | 文件/图片上传：uni.chooseImage + uni.uploadFile 封装 |
 | `references/charts.md` | ECharts 集成：l-echart 组件、uni-app 中的图表渲染 |
 | `references/multi-platform.md` | 多端差异处理：支付宝小程序/H5/APP-PLUS、版本更新、极光推送 |
+| `references/pitfalls-and-tips.md` | 常见陷阱与调试：路由栈溢出、TabBar 陷阱、组件通信、性能优化、样式问题 |
+| `references/build-and-subpackage.md` | 构建与分包：分包配置、预加载策略、静态资源优化、打包产物分析 |
+| `references/navigation-and-lifecycle.md` | 导航与生命周期：App/Page 生命周期、路由导航、页面栈管理、常见场景 |
+| `references/storage-and-cache.md` | 存储与缓存：uni.storage、Pinia persist、缓存策略、离线暂存、敏感数据安全 |
