@@ -104,7 +104,7 @@ src/
 | `references/components.md` | 核心组件：DataGrid（自研表格）、Panel（面板）、Dialog（弹窗）、Pagination 等 |
 | `references/mixins.md` | Mixins 体系：settingMixin（CRUD+分页+导入导出）、chartMixin、baseMixin |
 | `references/page-template.md` | 页面开发模板：setting 设置页标准写法、列表页、详情页模板 |
-| `references/startup-config.md` | 启动项配置：vue.config.js 模板、VUE_APP_* 环境变量、vue-cli-service 命令 |
+| `references/startup-config.md` | 启动项配置：vue.config.js 模板、VUE_APP_* 环境变量、vue-cli-service 命令、zip.cjs |
 | `references/auth-detail.md` | Vuex 权限实现：store 模块结构、vuex-persistedstate、token/菜单/用户管理 |
 | `references/store-patterns.md` | Vuex 模式：namespaced 模块化、自动注册 require.context、持久化配置 |
 | `references/axios-interceptors.md` | API 封装：axios 实例（拦截器 + token 注入 + noty 错误提示） |

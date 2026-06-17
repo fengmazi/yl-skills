@@ -144,4 +144,132 @@ VUE_APP_ENABLE_BAIDU_TONGJI = 'tongji-id'
 
 ## 部署相关内容
 
-部署脚本（deploy.js、zip.cjs、serverConfig.mjs）详见 `yl-frontend-pc-project-shared` skill 的 `references/deployment.md`。
+部署脚本（deploy.js、serverConfig.mjs）详见 `yl-frontend-pc-project-shared` skill 的 `references/deployment.md`，`zip.cjs` 模板见下文。
+
+## zip.cjs（构建后打包）
+
+`build-prod` 构建完成后自动调用 `node zip.cjs`，将 `dist/` 打包为 `dist.zip`，完成后打开文件管理器定位到该文件。
+
+### Scripts 集成
+
+```json
+{
+  "scripts": {
+    "build-prod": "vue-cli-service build --mode prod && node zip.cjs"
+  }
+}
+```
+
+### 跨平台压缩策略
+
+按优先级依次尝试，原生命令优先，Bandizip 作为兜底：
+
+| 优先级 | Windows | macOS | Linux |
+|--------|---------|-------|-------|
+| 1（原生） | `tar -a -cf dist.zip dist` | `zip -r dist.zip dist/` | `zip -r dist.zip dist/` |
+| 2（兜底） | `bz.exe c -r dist.zip dist` | `bz c -r dist.zip dist/` | `bz c -r dist.zip dist/` |
+
+> Windows 原生 tar 从 Win 10 1803 起内置支持 `-a` 参数生成 zip。Bandizip 命令行需将 `bz.exe` 所在目录加入 PATH。
+
+### 完整模板
+
+```javascript
+const { exec } = require('child_process')
+const path = require('path')
+const os = require('os')
+
+function getOSType() {
+  const platform = os.platform()
+  if (platform === 'win32') return 'windows'
+  if (platform === 'darwin') return 'mac'
+  return 'linux'
+}
+
+function getZipCommands() {
+  const osType = getOSType()
+  switch (osType) {
+    case 'windows':
+      return [
+        { cmd: 'tar -a -cf dist.zip dist', name: 'Windows 原生 tar' },
+        { cmd: 'bz.exe c -r dist.zip dist', name: 'Bandizip (bz.exe)' }
+      ]
+    case 'mac':
+      return [
+        { cmd: 'zip -r dist.zip dist/', name: 'macOS 原生 zip' },
+        { cmd: 'bz c -r dist.zip dist/', name: 'Bandizip (bz)' }
+      ]
+    case 'linux':
+      return [
+        { cmd: 'zip -r dist.zip dist/', name: 'Linux 原生 zip' },
+        { cmd: 'bz c -r dist.zip dist/', name: 'Bandizip (bz)' }
+      ]
+    default:
+      throw new Error(`不支持的操作系统: ${osType}`)
+  }
+}
+
+function getOpenCommand(filePath) {
+  const osType = getOSType()
+  switch (osType) {
+    case 'windows':
+      return `start "" explorer /select,"${filePath}"`
+    case 'mac':
+      return `open -R "${filePath}"`
+    case 'linux':
+      return `xdg-open "${path.dirname(filePath)}"`
+    default:
+      throw new Error(`不支持的操作系统: ${osType}`)
+  }
+}
+
+function execPromise(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+      if (error) reject({ error, stderr: stderr.trim() })
+      else resolve(stdout)
+    })
+  })
+}
+
+async function tryZipCommands(commands) {
+  const errors = []
+  for (const { cmd, name } of commands) {
+    try {
+      console.log(`正在尝试 ${name} ...`)
+      await execPromise(cmd)
+      console.log(`✓ ${name} 压缩成功`)
+      return
+    } catch (err) {
+      console.log(`✗ ${name} 失败: ${err.error.message}`)
+      errors.push({ name, message: err.error.message, stderr: err.stderr })
+    }
+  }
+  const errorMsg = errors.map(e => {
+    let detail = `  · ${e.name}: ${e.message}`
+    if (e.stderr) detail += `\n    错误详情: ${e.stderr}`
+    return detail
+  }).join('\n')
+  throw new Error(`所有压缩方式均失败，请检查环境配置：\n${errorMsg}`)
+}
+
+const file = path.resolve(__dirname, 'dist.zip')
+const commands = getZipCommands()
+
+tryZipCommands(commands)
+  .then(() => {
+    const openCommand = getOpenCommand(file)
+    return execPromise(openCommand)
+  })
+  .catch(error => {
+    console.error('\n打包失败:', error.message)
+    process.exit(1)
+  })
+```
+
+### 依赖要求
+
+| 依赖 | 必需 | 说明 |
+|------|------|------|
+| Node.js | 是 | 运行脚本的运行时 |
+| 系统 tar/zip | 否 | 各系统自带，优先使用 |
+| Bandizip | 否 | 仅当原生命令不可用时作为 fallback |
