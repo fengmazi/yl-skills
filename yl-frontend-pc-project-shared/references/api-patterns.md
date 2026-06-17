@@ -29,18 +29,31 @@
 
 ### OR 条件查询
 
-`joinType` 直接标在每条 `QueryDO` 上，与同级无 `joinType` 的条件默认 AND 关系：
+后端 `QueryDO` 结构中 `joinType` 在父级，`querys` 嵌套子条件：
+
+```ts
+// 后端 QueryDO 结构:
+// joinType: "or" / "and"  — 在父级
+// querys: List<QueryDO>    — 子条件列表
+```
+
+平铺 OR（外层 AND，内层 OR）：
 
 ```ts
 // 查询：meetingStatus=Y AND (nextType='' OR nextApproveStatus='reject')
 const querys: QueryDO[] = [
   { property: 'meetingStatus', value: 'Y', operator: 'EQUAL' },
-  { joinType: 'OR', property: 'nextType', value: '', operator: 'EQUAL' },
-  { joinType: 'OR', property: 'nextApproveStatus', value: 'reject', operator: 'EQUAL' },
+  {
+    joinType: 'OR',
+    querys: [
+      { property: 'nextType', value: '', operator: 'EQUAL' },
+      { property: 'nextApproveStatus', value: 'reject', operator: 'EQUAL' },
+    ],
+  },
 ]
 ```
 
-嵌套用法（AND 内嵌 OR）：
+嵌套 AND + OR：
 
 ```ts
 {
@@ -57,7 +70,7 @@ const querys: QueryDO[] = [
 }
 ```
 
-> 参见：`reimburseSummary.vue:1075`、`asset/scrap.vue:147`
+> 参见：`reimburseSummary.vue:1075`、`meetingOrder.vue:enterBatchMode`
 
 ### 操作符表
 
