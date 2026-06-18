@@ -69,20 +69,50 @@ Vue 3 + Vite 5 / 4 + Element Plus + vxe-table + Pinia + ECharts + TypeScript
   ```ts
   // Vue ≥ 3.5
   const dataTableRef = useTemplateRef('dataTableRef')
-  // Options API 组件需加泛型暴露 expose 方法，否则 TS 推断不到
-  const dataTableRef = useTemplateRef<{ clearCheckbox: () => void }>('dataTableRef')
+  // Options API 组件需加泛型暴露 expose 方法，否则 TS 推断不到。
+  // ⚠️ DataTable 实际 expose 的是 { xTable }（vxe-table 组件的 ref），
+  //    不是 clearCheckbox()。清除勾选要走 xTable.setAllCheckboxRow(false)。
+  const dataTableRef = useTemplateRef<{ xTable: { setAllCheckboxRow: (v: boolean) => void } }>('dataTableRef')
   // Vue < 3.5
   const dataTableRef = ref()
   ```
-- **批量操作后清除表格勾选**：DataTable 组件已暴露 `clearCheckbox()` 方法。页面批量操作（如批量送审）成功后，必须调用 `dataTableRef.value?.clearCheckbox()` 清除勾选，避免 vxe-grid 的 `reserve: true` 导致已变更状态的行仍被保留在勾选集合中，再次操作时报错。
+- **批量操作后清除表格勾选**：DataTable 内部用 vxe-table，**`checkbox-config={{ reserve: true }}` 跨页保留勾选**。批量操作（送审、弃审、封存等）成功后必须清勾选，否则状态已变更的行仍会保留在勾选集合中，再次操作时报错或重复处理。
   ```ts
+  // 模板
+  <DataTable ref="dataTableRef" ... />
+
+  // script
+  const dataTableRef = useTemplateRef<{ xTable: { setAllCheckboxRow: (v: boolean) => void } }>('dataTableRef')
+
+  // 同时清本地 tableSelected 变量（业务侧勾选集合）
+  const tableSelected: any[] = []
+
+  const clearTableSelection = () => {
+    dataTableRef.value?.xTable?.setAllCheckboxRow(false)
+    tableSelected.length = 0  // 或 tableSelected = []
+  }
+
   // 批量送审成功
   http.post('/xxx/submit', ids).then((res) => {
     ElMessage.success(res.message)
-    dataTableRef.value?.clearCheckbox()  // 清除勾选
+    clearTableSelection()
     handleTableRefresh()
   })
   ```
+
+  **vxe-table 勾选相关 API**（综合 `references/pagination-checkbox-reserve.md`）：
+
+  | API | 作用 |
+  |-----|------|
+  | `xTable.setAllCheckboxRow(false)` | 清空当前页所有勾选，同时清除 reserve 中当前页的行 |
+  | `xTable.clearCheckboxReserve()` | 清除所有跨页保留的勾选记录（更彻底） |
+  | `xTable.getCheckboxRecords(true)` | 获取当前页勾选的行 |
+  | `xTable.getCheckboxReserveRecords(true)` | 获取其他页 reserve 的勾选行 |
+  | `xTable.setCheckboxRow(item, true)` | 勾选指定行，自动加入 reserve |
+
+  **清勾选的最佳实践**：
+  - 普通批量操作后 → `setAllCheckboxRow(false)` 即可
+  - 需要彻底清空跨页勾选 → `setAllCheckboxRow(false)` + `clearCheckboxReserve()` 一起调
 
 ## 项目目录
 
