@@ -31,6 +31,7 @@ Vue 2.6 + Vue CLI 3 + Element UI 2.15 + Vuex 3 + Vue Router 3 + SCSS + ECharts 5
 
 ## 约束
 
+- **【最高优先级】所有代码必须添加注释**。详见 `yl-frontend-pc-project-shared` skill 的 `references/comments.md`。新增/修改 mixins、utils、views、components 等任何代码文件时，必须同步添加符合规范的注释。
 - **不可修改后端代码**。需要改后端时先说明理由征求同意。
 - 前端使用 npm（老项目用 npm，非 pnpm）
 - **本项目不使用 TypeScript**，纯 JavaScript

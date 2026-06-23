@@ -33,6 +33,7 @@ metadata:
 
 ## 约束（所有版本通用）
 
+- **【最高优先级】所有代码必须添加注释**。新增或修改任何代码文件时，必须同步添加符合规范的注释。这不是建议，是代码的一部分。注释不完整 = 代码不完整。详见 `references/comments.md`。
 - **不可修改后端代码**。需要改后端时先说明理由征求同意。
 - 前端使用 pnpm，Git 提交用 commitizen (`pnpm commit`)
 - 拉取后端代码注意分支，拿不准先问
@@ -47,3 +48,4 @@ metadata:
 | `references/utilities.md` | 工具函数：formatMoney、smalltoBIG、treeDataToKeyValue、calculateFormula 等 |
 | `references/deployment.md` | 部署流程：deploy.js 完整模板、zip.cjs 跨平台打包、serverConfig 配置 |
 | `references/textarea-display.md` | 多行文本原样显示（white-space: pre-wrap）的使用场景 |
+| `references/comments.md` | **【最高优先级】代码注释规范**：JSDoc 标准、维护注释、项目特有约定、按代码类型的注释模板 |

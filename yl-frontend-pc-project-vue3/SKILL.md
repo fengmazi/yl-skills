@@ -62,6 +62,7 @@ Vue 3 + Vite 5 / 4 + Element Plus + vxe-table + Pinia + ECharts + TypeScript
 
 ## 约束
 
+- **【最高优先级】所有代码必须添加注释**。详见 `yl-frontend-pc-project-shared` skill 的 `references/comments.md`。新增/修改 hooks、utils、types、stores、views 等任何代码文件时，必须同步添加符合规范的注释。
 - **不可修改后端代码**。需要改后端时先说明理由征求同意。
 - 前端使用 pnpm，Git 提交用 commitizen (`pnpm commit`)
 - 拉取后端代码注意分支，拿不准先问
