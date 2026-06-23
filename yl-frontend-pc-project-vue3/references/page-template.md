@@ -267,10 +267,13 @@ column.filterParam!.options = res.options
 
 ```html
 <DataTable
+  :key="listType"
   :rowId="listType === 'order' ? 'orderId' : 'detailId'"
   ...
 />
 ```
+
+> **必须同时加 `:key="listType"`**：切换模式时 `listType` 立即改变、`rowId` 也立即改变，但 `tableData` 还是旧数据。旧明细数据用新 `rowId`（`orderId`）渲染会因多行共享同一 `orderId` 导致主键冲突。`:key` 让切换时 vxe-table 完全卸载重建，避免旧数据用新 rowId 渲染。
 
 **2. 列定义分开维护**
 
