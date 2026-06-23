@@ -10,8 +10,9 @@
     "dev": "vite --host",
     "dev:local": "vite --host --mode dev-local",
     "dev:onlineTest": "vite --host --mode dev-onlineTest",
-    "build": "vue-tsc && vite build",
-    "build-prod": "vue-tsc --noEmit && vite build --mode prod && node zip.cjs",
+    "typecheck": "vue-tsc --noEmit",
+    "build": "pnpm typecheck && vite build",
+    "build-prod": "pnpm typecheck && vite build --mode prod && node zip.cjs",
     "preview": "vite preview",
     "deploy": "pnpm build && node ./deploy.js",
     "prepare": "husky install",
@@ -19,6 +20,8 @@
   }
 }
 ```
+
+> **typecheck 独立脚本**：Vite 项目应独立 `"typecheck": "vue-tsc --noEmit"` 脚本，日常开发时用 `pnpm typecheck` 快速校验类型，无需走完整打包。`build` / `build-prod` 内部通过 `pnpm typecheck && ...` 串联，确保构建前必须通过类型检查。
 
 ### Vue CLI 项目（Vue 2 / Webpack）
 

@@ -90,12 +90,15 @@ VUE_APP_ENABLE_BAIDU_TONGJI = 'tongji-id'
     "dev": "vue-cli-service serve",
     "dev:local": "vue-cli-service serve --mode dev-local",
     "dev:onlineTest": "vue-cli-service serve --mode dev-onlineTest",
-    "build": "vue-cli-service build",
-    "build-prod": "vue-cli-service build --mode prod && node zip.cjs",
-    "deploy": "npm run build && node ./deploy.js"
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm typecheck && vue-cli-service build",
+    "build-prod": "pnpm typecheck && vue-cli-service build --mode prod && node zip.cjs",
+    "deploy": "pnpm build && node ./deploy.js"
   }
 }
 ```
+
+> **typecheck 独立脚本**：Vue CLI + TypeScript 项目用 `tsc --noEmit` 做类型检查。`fork-ts-checker-webpack-plugin` 只在 `dev`/`build` 时生效，不适合独立校验。日常开发用 `pnpm typecheck` 即可。如果项目是纯 JS 没有 TypeScript，跳过此脚本。
 
 ---
 
