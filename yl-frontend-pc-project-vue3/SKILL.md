@@ -2,7 +2,7 @@
 name: yl-frontend-pc-project-vue3
 description: 引领 PC 前端 Vue 3 项目开发规范。当修改或新增 Vue 3 PC 端页面、组件、hooks、启动配置时使用。适用于 Vue 3 + Vite + Element Plus + vxe-table + Pinia + TypeScript 技术栈。
 metadata:
-  version: "2026.6.10"
+  version: "2026.6.23"
 ---
 
 # 引领 PC 前端项目 — Vue 3
@@ -185,3 +185,4 @@ Vue 3 + Vite 5 / 4 + Element Plus + vxe-table + Pinia + ECharts + TypeScript
 | `references/selectdialog-groupkey.md` | SelectDialog 按字段分组勾选（groupKey）的用法与实现 |
 | `references/print-module.md` | 打印模块架构：目录结构、三段式模板、分页流程、新增单据步骤 |
 | `references/copy-record.md` | 整单复制/表头复制：DetailDialog 插槽按钮、copyRecord 模式、适配要点 |
+| `references/version-panel.md` | 版本信息调试面板：Ctrl+Shift+V 弹窗，显示构建版本号/Git哈希/打包时间，无需接口 |
