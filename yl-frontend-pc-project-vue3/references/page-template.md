@@ -248,6 +248,46 @@ const column = getColumn('fieldName')
 column.filterParam!.options = res.options
 ```
 
+> **重要**：如果通过 `getColumn` 动态赋值 `options`，该列的 `filterParam.type` 必须是 `Array`，不能是 `String`（`String` 渲染为文本输入框，`Array` 渲染为下拉选择）。
+>
+> ```ts
+> // 正确：定义为 Array 类型，options 初始为 []
+> { field: 'purchaseTypeName', title: '采购类型', filterParam: { type: Array, options: [] } }
+> // 后续通过 getColumn 注入选项
+> getColumn('purchaseTypeName').filterParam!.options = res.options
+> ```
+
+### 单据/明细列表切换
+
+页面上有"单据""明细"两个列表切换时（如入库单/出库单），注意以下两点：
+
+**1. rowId 必须动态切换**
+
+单据模式用单据级别的唯一 ID（如 `orderId`），明细模式用明细级别的唯一 ID（如 `detailId`），否则 vxe-table 会因主键重复报错：
+
+```html
+<DataTable
+  :rowId="listType === 'order' ? 'orderId' : 'detailId'"
+  ...
+/>
+```
+
+**2. 列定义分开维护**
+
+两种模式下的表格列通常不同（单据列 vs 明细列），通过 `listType` 切换：
+
+```ts
+const listType = ref('order')
+
+const { columns } = useColumn([
+  // ... 单据列定义
+])
+
+const detailColumns = ref<Column[]>([
+  // ... 明细列定义
+])
+```
+
 ---
 
 ## 常用列配置
