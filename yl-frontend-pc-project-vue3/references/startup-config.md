@@ -495,3 +495,142 @@ tryZipCommands(commands)
 | Node.js | 是 | 运行脚本的运行时 |
 | 系统 tar/zip | 否 | 各系统自带，优先使用 |
 | Bandizip | 否 | 仅当原生命令不可用时作为 fallback |
+
+---
+
+## 代码格式化与质量检查（Prettier + ESLint）
+
+### 理念
+
+| 工具 | 职责 | 示例 |
+|------|------|------|
+| **Prettier** | 代码格式 | 分号、引号、缩进、换行、行宽 |
+| **ESLint** | 代码质量 | 未使用变量、Vue 模板规则、import 排序 |
+| **vue-tsc** | 类型检查 | TypeScript 类型错误 |
+
+**关键**：用 `eslint-config-prettier` 关掉 ESLint 中与 Prettier 冲突的格式化规则，各管各的。
+
+### .prettierrc.cjs（统一模板）
+
+```js
+module.exports = {
+  singleQuote: true,
+  semi: false,
+  tabWidth: 2,
+  printWidth: 120,
+  trailingComma: 'es5',
+  arrowParens: 'avoid',
+  bracketSameLine: true,
+}
+```
+
+### eslint.config.js（ESLint 9 flat config，统一模板）
+
+```js
+import pluginVue from 'eslint-plugin-vue'
+import tsParser from '@typescript-eslint/parser'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+import prettierConfig from 'eslint-config-prettier'
+
+export default [
+  // 全局忽略
+  { ignores: ['dist/', 'node_modules/', '*.d.ts'] },
+
+  // TS / JS 基础规则
+  {
+    files: ['**/*.{ts,tsx,js,jsx}'],
+    languageOptions: { parser: tsParser },
+    plugins: { '@typescript-eslint': tsPlugin },
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+
+  // Vue 文件规则
+  ...pluginVue.configs['flat/recommended'],
+  {
+    files: ['**/*.vue'],
+    languageOptions: {
+      parserOptions: { parser: tsParser },
+    },
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+
+  // Prettier 放最后，覆盖冲突规则
+  prettierConfig,
+]
+```
+
+### eslint.config.js（ESLint 8 旧版，Vue CLI 项目用）
+
+```js
+module.exports = {
+  root: true,
+  extends: ['plugin:vue/essential', '@vue/typescript/recommended', 'prettier'],
+  plugins: ['prettier'],
+  rules: {
+    'vue/multi-word-component-names': 'off',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+  },
+}
+```
+
+### 依赖
+
+```json
+{
+  "devDependencies": {
+    "prettier": "^3.x",
+    "eslint": "^9.x",
+    "eslint-config-prettier": "^10.x",
+    "eslint-plugin-vue": "^9.x",
+    "@typescript-eslint/parser": "^8.x",
+    "@typescript-eslint/eslint-plugin": "^8.x"
+  }
+}
+```
+
+### Scripts
+
+```json
+{
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --ext .vue,.ts,.tsx",
+    "lint:fix": "eslint . --ext .vue,.ts,.tsx --fix"
+  }
+}
+```
+
+- `pnpm format` — 格式化
+- `pnpm lint` — 检查代码质量
+- `pnpm lint:fix` — 自动修复可修复的问题
+
+### 存量项目处理
+
+老项目有配置但代码没格式化过，保存时 IDE 重排整个文件。标准流程：
+
+1. **先加配置和依赖**，确保规则定下来
+2. **全量格式化一次**：`pnpm format && pnpm lint:fix` 单独提交 `style: format code`
+3. 之后改动只影响你改的行，不会大面积重排
+4. 新项目**第一天就加**，避免历史包袱
+
+### VSCode 配置（推荐放在项目 `.vscode/settings.json`）
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[vue]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+}
+```
+
+保存时 Prettier 先格式化，然后 ESLint 自动修复质量问题。
