@@ -259,23 +259,69 @@ column.filterParam!.options = res.options
 
 ### 单据/明细列表切换
 
-页面上有"单据""明细"两个列表切换时（如入库单/出库单），注意以下两点：
+页面上有"单据""明细"两个列表切换时（如入库单/出库单），注意以下几点：
 
-**1. rowId 必须动态切换**
+**1. tableUrl 使用 computed 自动切换**
 
-单据模式用单据级别的唯一 ID（如 `orderId`），明细模式用明细级别的唯一 ID（如 `detailId`），否则 vxe-table 会因主键重复报错：
+单据和明细调不同的接口。**不要**在 `handleListTypeChange` 里手动赋 `tableUrl.value`，用 `computed` 让 URL 随 `listType` 自动计算。避免 DataTable 的 `watchEffect` 和 `useTable` 的 `watch(url)` 同时触发导致重复请求：
+
+```ts
+// 正确：computed 自动切换
+const listType = ref('order')
+const tableUrl = computed(() =>
+  listType.value === 'order' ? '/logisticsInbound/query' : '/logisticsInbound/queryDetail'
+)
+
+const handleListTypeChange = (val: string) => {
+  listType.value = val
+  dataTableRef.value?.clearCheckbox()
+}
+```
+
+```ts
+// 错误：手动赋值 URL，会导致 useTable 的 watch(url) 和 DataTable 双触发
+const handleListTypeChange = () => {
+  tableUrl.value = listType.value === 'order' ? '/xxx/query' : '/xxx/queryDetail'
+}
+```
+
+**2. 不要加 `:key="listType"`**
+
+加 `:key` 会让 DataTable 完全卸载重建，其内部的 `watchEffect` 会在挂载时触发一次请求，加之 `useTable` 的 `watch(url)` 也触发一次，导致列表接口请求两次。
 
 ```html
+<!-- 正确：不加 :key，columns/rowId 通过 reactive props 自动更新 -->
 <DataTable
-  :key="listType"
+  ref="dataTableRef"
   :rowId="listType === 'order' ? 'orderId' : 'detailId'"
+  :columns="listType === 'order' ? columns : detailColumns"
   ...
 />
 ```
 
-> **必须同时加 `:key="listType"`**：切换模式时 `listType` 立即改变、`rowId` 也立即改变，但 `tableData` 还是旧数据。旧明细数据用新 `rowId`（`orderId`）渲染会因多行共享同一 `orderId` 导致主键冲突。`:key` 让切换时 vxe-table 完全卸载重建，避免旧数据用新 rowId 渲染。
+**3. JSX 中 radio-group 用 modelValue + onUpdate:modelValue**
 
-**2. 列定义分开维护**
+`v-model={ref.value}` 在 JSX 中退化为单向绑定，切换后 `listType.value` 不会更新。`v-model={ref}` 在某些 JSX 插件版本下也会报 "Assignment to constant variable"。用显式的 `modelValue` + `onUpdate:modelValue` 规避：
+
+```tsx
+const toolbarBtns = () => [
+  <el-radio-group
+    size="small"
+    modelValue={listType.value}
+    onUpdate:modelValue={handleListTypeChange}
+    style="margin-right: 10px"
+  >
+    <el-radio-button value="order">单据</el-radio-button>
+    <el-radio-button value="detail">明细</el-radio-button>
+  </el-radio-group>,
+]
+```
+
+**4. rowId 必须动态切换**
+
+单据模式用单据级别的唯一 ID（如 `orderId`），明细模式用明细级别的唯一 ID（如 `detailId`），否则 vxe-table 会因主键重复报错。
+
+**5. 列定义分开维护**
 
 两种模式下的表格列通常不同（单据列 vs 明细列），通过 `listType` 切换：
 

@@ -42,6 +42,17 @@ const { tableData, total, pageNo, pageSize, loading, handleQueryPage } = useTabl
 })
 ```
 
+**单据/明细切换时用 computed**：页面有"单据""明细"两套列表、调不同接口时，`url` 用 `computed` 而非手动 `ref.value = xxx`。手动赋值会导致 `useTable` 的 `watch(url)` 和 DataTable 的 `watchEffect` 双触发重复请求。详见 `references/page-template.md` 的"单据/明细列表切换"章节。
+
+```ts
+// 正确：computed 自动切换
+const listType = ref('order')
+const tableUrl = computed(() =>
+  listType.value === 'order' ? '/logisticsInbound/query' : '/logisticsInbound/queryDetail'
+)
+const { tableData, ... } = useTable({ url: tableUrl })
+```
+
 **典型用法（带筛选参数）**：
 
 ```ts
