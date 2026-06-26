@@ -111,6 +111,12 @@ const perFormConfig = ref([
 - `value-format: 'YYYY-MM-DD'` — 日期字符串
 - 表格中使用 `useDateFormat(timestamp, 'YYYY-MM-DD')` 显示时，注意区分毫秒/秒
 
+### daterange 选同一天 end time 错误
+
+查询/筛选区域用 `el-date-picker`（`type="daterange"` + `value-format="x"`）选同一天时，end 会停在当天 00:00:00，BETWEEN 区间查不到当天数据。**必须 `:default-time` + `setHours(23, 59, 59, 999)` 两步配套**。
+
+详见 `el-date-picker-daterange-default-time.md`。
+
 ### upload 配置
 
 ```ts

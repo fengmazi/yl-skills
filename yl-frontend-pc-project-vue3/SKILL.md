@@ -182,6 +182,7 @@ Vue 3 + Vite 5 / 4 + Element Plus + vxe-table + Pinia + ECharts + TypeScript
 | `references/dual-system.md` | 双系统共存：common 与 common-xxx 的目录结构、对照表、注册顺序 |
 | `references/edittable-scroll.md` | EditTable 横向滚动条跳回问题的原因与修复 |
 | `references/el-input-number-performance.md` | el-input-number 在 EditTable 中输入卡顿：change 事件每次按键都触发，需用 50ms setTimeout 防抖 |
+| `references/el-date-picker-daterange-default-time.md` | el-date-picker daterange 选同一天 end 错误：必须 `:default-time` + `setHours(23, 59, 59, 999)` 两步配套 |
 | `references/pagination-checkbox-reserve.md` | SelectDialog/DialogTable 翻页多选勾选丢失：根因、修复方案、影响分析 |
 | `references/selectdialog-groupkey.md` | SelectDialog 按字段分组勾选（groupKey）的用法与实现 |
 | `references/print-module.md` | 打印模块架构：目录结构、三段式模板、分页流程、新增单据步骤 |
