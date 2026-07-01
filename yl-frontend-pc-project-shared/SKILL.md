@@ -48,5 +48,6 @@ metadata:
 | `references/utilities.md` | 工具函数：formatMoney、smalltoBIG、treeDataToKeyValue、calculateFormula 等 |
 | `references/deployment.md` | 部署流程：deploy.js 完整模板、zip.cjs 跨平台打包、serverConfig 配置 |
 | `references/textarea-display.md` | 多行文本原样显示（white-space: pre-wrap）的使用场景 |
+| `references/orval-setup.md` | Swagger → TypeScript 类型自动生成：orval 8 方案、transformer 修坑、多模块配置 |
 | `references/comments.md` | **【最高优先级】代码注释规范**：JSDoc 标准、维护注释、项目特有约定、按代码类型的注释模板 |
 | `references/pnpm-config.md` | pnpm 配置指南：项目 `.npmrc` 规范、node-linker 选择、git 依赖 `#` 路径兼容性 |
