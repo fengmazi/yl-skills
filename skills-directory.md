@@ -18,8 +18,4 @@
 |------|------|
 | `yl-frontend-uniapp-project` | uni-app 专用：Vue 3 + Pinia + my-* 组件 + 条件编译 + 多端适配 |
 
-### 项目管理
 
-| 技能 | 说明 |
-|------|------|
-| `requirement-doc-process` | 需求文档处理：从 Word 提取图文 → 按开发顺序整理 → 任务拆分 |

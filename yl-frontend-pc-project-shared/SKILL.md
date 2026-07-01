@@ -51,3 +51,4 @@ metadata:
 | `references/orval-setup.md` | Swagger → TypeScript 类型自动生成：orval 8 方案、transformer 修坑、多模块配置 |
 | `references/comments.md` | **【最高优先级】代码注释规范**：JSDoc 标准、维护注释、项目特有约定、按代码类型的注释模板 |
 | `references/pnpm-config.md` | pnpm 配置指南：项目 `.npmrc` 规范、node-linker 选择、git 依赖 `#` 路径兼容性 |
+| `references/requirement-doc-process.md` | 需求文档处理规范：Word 图文提取 → 按开发顺序整理 → 任务拆分 |
