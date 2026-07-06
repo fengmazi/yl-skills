@@ -69,6 +69,8 @@ uni-app 项目**没有传统的 `src/` 目录**，源码直接在项目根目录
 | `references/api-patterns.md` | API 请求模式：uni.request 封装、全局拦截器、请求队列管理 |
 | `references/auth.md` | 认证与权限：OAuth2 登录、钉钉集成、Pinia store（persist to storageSync） |
 | `references/startup-config.md` | 启动项配置：manifest.json、pages.json（tabBar/subPackages）、条件编译环境变量 |
+| `references/coding-conventions.md` | 编码规范：组件编写风格、uni-app 标签规则、样式规范、导航模式、权限控制、禁止事项 |
+| `references/pc-app-sync.md` | PC→APP 功能同步：技术栈对比、组件映射表、同步步骤、常见场景 |
 | `references/enums-detail.md` | 枚举体系：uni-app 中的枚举定义与使用模式 |
 | `references/condition-compilation.md` | 条件编译规范：#ifdef APP-PLUS / H5 / MP-WEIXIN / MP-ALIPAY |
 | `references/upload.md` | 文件/图片上传：uni.chooseImage + uni.uploadFile 封装 |

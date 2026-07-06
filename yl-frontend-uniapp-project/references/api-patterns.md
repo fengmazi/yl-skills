@@ -123,6 +123,48 @@ onUnload(() => {
 
 ---
 
+## 通用查询参数格式
+
+引领后端列表接口统一使用 POST，body 采用标准查询格式：
+
+```json
+{
+  "current": 1,
+  "pageSize": 20,
+  "querys": [
+    {
+      "property": "fieldName",
+      "value": "value",
+      "operator": "EQUAL"
+    }
+  ],
+  "sorts": [
+    {
+      "property": "createDate",
+      "value": "DESC"
+    }
+  ]
+}
+```
+
+| 操作符 | 说明 |
+|--------|------|
+| EQUAL | 等于 |
+| LIKE | 模糊匹配 |
+| GREATER_EQUAL | 大于等于 |
+| LESS_EQUAL | 小于等于 |
+| IN | 批量匹配 |
+
+响应格式：
+
+```typescript
+{
+  code: number       // 20000-29999 = 成功
+  data: T
+  message: string
+}
+```
+
 ## 页面内调用方式
 
 API 请求直接在各页面中内联调用，**无独立的 `src/api/` 目录**：
