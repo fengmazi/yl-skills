@@ -244,3 +244,53 @@ http.post('/api/options').then(res => {
 `useTable`（Vue 3 hooks）或 settingMixin（Vue 2 mixins）内部封装了分页请求，将 `pageNo`、`pageSize`、`queryList`、`sortList` 组装为后端要求的分页参数格式。页面只需调用 `handleTableRefresh()` 或 `handleQueryPage()` 即可触发请求。
 
 > Vue 3 各项目（`-bt` vs `-nnw` 后缀）的 `useTable` 实现可能有差异，Vue 2 项目使用 Mixins 方式。以当前项目实际代码为准。
+
+## Axios 重复请求取消（addToCancelList）
+
+### 正确实现
+
+```ts
+// 存储请求标识和取消函数的Map
+const pendingMap = new Map<string, AbortController>()
+
+function getPendingKey(config: AxiosRequestConfig) {
+  let { url, method, params, data } = config
+  return [url, method, JSON.stringify(params), JSON.stringify(data)].join('&')
+}
+
+function addPending(config: AxiosRequestConfig) {
+  const pendingKey = getPendingKey(config)
+  // 重复请求时用新换旧：先取旧 → delete → abort → 再 set 新
+  if (pendingMap.has(pendingKey)) {
+    const oldController = pendingMap.get(pendingKey)!
+    pendingMap.delete(pendingKey)  // 必须先 delete，否则 abort 触发的 error handler 会从 map 里找到并取消新请求
+    oldController.abort()
+  }
+  const controller = new AbortController()
+  config.signal = controller.signal
+  pendingMap.set(pendingKey, controller)
+}
+
+function removePending(config: AxiosRequestConfig) {
+  const pendingKey = getPendingKey(config)
+  if (pendingMap.has(pendingKey)) {
+    pendingMap.get(pendingKey)?.abort()
+    pendingMap.delete(pendingKey)
+  }
+}
+```
+
+### 常见 bug：if 拦住了 set
+
+```ts
+// ❌ 错误：重复 key 时新 controller 被丢弃，变成孤儿，谁都取消不了它
+function addPending(config) {
+  const controller = new AbortController()
+  config.signal = controller.signal
+  if (!pendingMap.has(pendingKey)) {
+    pendingMap.set(pendingKey, controller)
+  }
+}
+```
+
+**后果**：连续两次同 URL 请求时，第二个请求的 abort controller 没存进 map，`removePending` 永远取消不了它。第一个请求只能"碰巧"被第二个请求的响应 `removePending` 顺带取消（仅当请求 2 比请求 1 快才生效）。大部分情况下两个请求都会跑完，`addToCancelList: true` 形同虚设。
