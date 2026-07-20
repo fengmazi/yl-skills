@@ -211,6 +211,169 @@ const { handleApprove, handleReject, handleRevoke } = useOperate('/api/module', 
 
 ---
 
+## 批量操作模式
+
+实现批量送审、批量审批等批量操作的标准模式。核心思想：**状态驱动工具栏 + checkboxConfig 控制可选行 + filterParam 自动筛选数据**。
+
+### 1. 状态类型与初始值
+
+```ts
+type BtnState = 'default' | 'submit' | 'check'
+const btnState = ref<BtnState>('default')
+```
+
+### 2. checkboxConfig（控制勾选逻辑）
+
+**必须用 ref 包裹**，通过 `checkboxConfig` 透传属性覆盖 DataTable 内部 vxe-grid 的 `checkbox-config`，不能用 DataTable 的 `checkMethod` prop（内部静态绑定，动态切换不生效）：
+
+```ts
+const checkboxConfig = ref({
+  checkMethod: ({ row }: { row: any }): boolean => false,
+})
+```
+
+模板中传 `checkboxConfig`（非 `checkMethod`）作为透传属性：
+
+```html
+<DataTable
+  ref="dataTableRef"
+  :columns="columns"
+  :checkboxConfig="checkboxConfig"
+  ...
+/>
+```
+
+### 3. toolbarBtns（状态驱动工具栏）
+
+```tsx
+const toolbarBtns = () => {
+  switch (btnState.value) {
+    case 'submit':
+      return [
+        <el-button type="primary" size="small" onClick={handleBatchSubmit}>
+          确认批量送审
+        </el-button>,
+        <el-button type="info" size="small" onClick={cancelBatch}>
+          取消
+        </el-button>,
+      ]
+    case 'check':
+      return [
+        <el-button type="primary" size="small" onClick={() => batchCheck('pass')}>
+          批量通过
+        </el-button>,
+        <el-button type="danger" size="small" onClick={() => batchCheck('reject')}>
+          批量驳回
+        </el-button>,
+        <el-button type="info" size="small" onClick={cancelBatch}>
+          取消
+        </el-button>,
+      ]
+    default:
+      return [
+        <el-radio-group ...>...</el-radio-group>,
+        <el-button ... onClick={() => startBatch('submit')}>批量送审</el-button>,
+        <el-button ... onClick={() => startBatch('check')}>批量审批</el-button>,
+      ]
+  }
+}
+```
+
+### 4. startBatch / cancelBatch（进入/退出批量模式）
+
+修改 `statusColumns`（审批状态列）的 `filterParam` 来触发 DataTable 的响应式筛选链路。DataTable 内部通过 `newColunms` computed → `filterOptions` → `querys` computed → `watchEffect` 自动 emit `tableRefresh`，**不要手动调 `handleTableRefresh()`**：
+
+```ts
+const startBatch = (state: BtnState) => {
+  btnState.value = state
+  dataTableRef.value?.clearCheckbox()
+  if (state === 'submit') {
+    checkboxConfig.value.checkMethod = ({ row }: { row: any }) =>
+      ['new'].includes(row.approveStatus)
+    statusColumns.value[0].filterParam = {
+      type: Array,
+      options: enums.approveStatusOption,
+      operator: 'EQUAL',
+      value: 'new',
+    }
+  } else if (state === 'check') {
+    checkboxConfig.value.checkMethod = ({ row }: { row: any }) =>
+      ['submit', 'abandon'].includes(row.approveStatus)
+    statusColumns.value[0].filterParam = {
+      type: Array,
+      options: enums.approveStatusOption,
+      operator: 'IN',
+      value: ['submit', 'abandon'],
+    }
+  }
+}
+
+const cancelBatch = () => {
+  btnState.value = 'default'
+  statusColumns.value[0].filterParam = {
+    type: Array,
+    options: enums.approveStatusOption,
+  }
+  checkboxConfig.value.checkMethod = ({ row }: { row: any }) => false
+  dataTableRef.value?.clearCheckbox()
+}
+```
+
+### 5. 批量操作执行函数
+
+```ts
+// 批量送审
+const handleBatchSubmit = () => {
+  if (!tableSelected.length) return ElMessage.warning('请至少选择一条记录')
+  ElMessageBox.confirm('确定要批量送审吗？', '提示')
+    .then(() =>
+      http.post('/xxx/submit', tableSelected.map((item: any) => item.orderId))
+        .then((res: any) => {
+          ElMessage.success(res.message)
+          dataTableRef.value?.clearCheckbox()
+          tableSelected.length = 0
+          cancelBatch()
+        })
+    )
+    .catch(() => {})
+}
+
+// 批量审批（通过/驳回共用，通过 status 参数区分）
+const batchCheck = (status: 'pass' | 'reject') => {
+  if (!tableSelected.length) return ElMessage.warning('请至少选择一条记录')
+  http.post('/xxx/check', {
+    ids: tableSelected.map((item: any) => item.orderId),
+    approveStatus: status,
+  }).then((res: any) => {
+    ElMessage.success(res.message)
+    dataTableRef.value?.clearCheckbox()
+    tableSelected.length = 0
+    cancelBatch()
+  })
+}
+```
+
+### 6. 勾选事件
+
+```ts
+let tableSelected: any[] = []
+const checkboxChange = ({ records }: { records: any }) => {
+  tableSelected = records
+}
+```
+
+### 关键点
+
+| 要点 | 说明 |
+|------|------|
+| **透传 checkboxConfig** | DataTable 的 `checkMethod` prop 是静态绑定，必须用 `:checkboxConfig="checkboxConfig"` 透传到 vxe-grid |
+| **filterParam 驱动筛选** | 不要直接改 `queryList`，修改列上的 `filterParam.value`+`filterParam.operator`，让 DataTable 内部响应式链路自动触发 |
+| **不要手动 handleTableRefresh** | filterParam 变化 → DataTable 自动 emit `tableRefresh`，手动调用会重复请求 |
+| **操作完清勾选并退模式** | `clearCheckbox()` + `tableSelected.length = 0` + `cancelBatch()` |
+| **filterParam 重置** | cancelBatch 时重置为 `{ type: Array, options: ... }`（无 value 不筛选） |
+
+---
+
 ## 文件命名约定
 
 | 文件 | 导出方式 | 命名 |
