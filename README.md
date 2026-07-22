@@ -17,6 +17,6 @@
 
 | 字段 | 值 |
 |------|-----|
-| Owner | fengmazi |
+| Owner | your-github-username |
 | Name | yl-skills |
 | Branch | main |
