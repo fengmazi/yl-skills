@@ -187,4 +187,5 @@ Vue 3 + Vite 5 / 4 + Element Plus + vxe-table + Pinia + ECharts + TypeScript
 | `references/selectdialog-groupkey.md` | SelectDialog 按字段分组勾选（groupKey）的用法与实现 |
 | `references/print-module.md` | 打印模块架构：目录结构、三段式模板、分页流程、新增单据步骤 |
 | `references/copy-record.md` | 整单复制/表头复制：DetailDialog 插槽按钮、copyRecord 模式、适配要点 |
+| `references/approval-editable-detail.md` | 审批流可编辑明细表：Detail.vue 切换 EditTable、SelectDialog 新增行、Task.vue 提交载荷、完整 checklist |
 | `references/version-panel.md` | 版本信息调试面板：Ctrl+Shift+V 弹窗，显示构建版本号/Git哈希/打包时间，无需接口 |
